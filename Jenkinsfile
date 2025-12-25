@@ -50,6 +50,20 @@ pipeline {
     }
   }
 
+  stage('Deploy') {
+      steps {
+        sh '''
+          set -e
+          mkdir -p "${DEPLOY_DIR}"
+          rm -rf "${DEPLOY_DIR:?}/"*
+          tar -xzf dist/webapp.tgz -C "${DEPLOY_DIR}"
+          echo "Deployed to ${DEPLOY_DIR}"
+          ls -la "${DEPLOY_DIR}"
+        '''
+      }
+    }
+  }
+  
   post {
     always {
       archiveArtifacts artifacts: 'dist/**', fingerprint: true
@@ -57,14 +71,3 @@ pipeline {
   }
 }
 
-    stage('Deploy') {
-      steps {
-        sh '''
-          set -e
-          rm -rf /opt/prod-server/*
-          tar -xzf dist/webapp.tgz -C /opt/prod-server
-          echo "Deployed to /opt/prod-server:"
-          ls -la /opt/prod-server
-        '''
-      }
-    }
