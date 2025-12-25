@@ -57,3 +57,14 @@ pipeline {
   }
 }
 
+    stage('Deploy') {
+      steps {
+        sh '''
+          set -e
+          rm -rf /opt/prod-server/*
+          tar -xzf dist/webapp.tgz -C /opt/prod-server
+          echo "Deployed to /opt/prod-server:"
+          ls -la /opt/prod-server
+        '''
+      }
+    }
