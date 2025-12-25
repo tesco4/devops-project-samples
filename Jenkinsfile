@@ -1,9 +1,9 @@
-
 pipeline {
   agent any
 
   environment {
     APP_DIR = 'node/plain/webappWithTests/Application'
+    DEPLOY_DIR = '/opt/prod-server'
   }
 
   stages {
@@ -48,9 +48,8 @@ pipeline {
         '''
       }
     }
-  }
 
-  stage('Deploy') {
+    stage('Deploy') {
       steps {
         sh '''
           set -e
@@ -63,7 +62,7 @@ pipeline {
       }
     }
   }
-  
+
   post {
     always {
       archiveArtifacts artifacts: 'dist/**', fingerprint: true
@@ -71,3 +70,4 @@ pipeline {
   }
 }
 
+   
