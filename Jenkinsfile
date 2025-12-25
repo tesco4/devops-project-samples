@@ -1,16 +1,23 @@
+
 pipeline {
   agent any
-   
 
   environment {
     APP_DIR = 'node/plain/webappWithTests/Application'
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
     stage('Install') {
       steps {
         dir("${APP_DIR}") {
           sh '''
+            set -e
             node -v
             npm -v
             npm ci
@@ -19,9 +26,21 @@ pipeline {
       }
     }
 
+    stage('Test') {
+      steps {
+        dir("${APP_DIR}") {
+          sh '''
+            set -e
+            npm test
+          '''
+        }
+      }
+    }
+
     stage('Package') {
       steps {
         sh '''
+          set -e
           rm -rf dist
           mkdir -p dist
           tar -czf dist/webapp.tgz -C "${APP_DIR}" .
@@ -37,3 +56,4 @@ pipeline {
     }
   }
 }
+
