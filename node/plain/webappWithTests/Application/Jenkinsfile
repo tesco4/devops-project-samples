@@ -1,0 +1,45 @@
+pipeline {
+  agent any
+
+  environment {
+    IMAGE_NAME = "webapp"
+    IMAGE_TAG  = "v2"
+    TEST_CONTAINER = "webapp-ci"
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        sh '''
+          docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+        '''
+      }
+    }
+
+    stage('Smoke Test') {
+      steps {
+        sh '''
+          set -e
+          docker rm -f ${TEST_CONTAINER} >/dev/null 2>&1 || true
+          docker run -d --name ${TEST_CONTAINER} -p 8093:8092 ${IMAGE_NAME}:${IMAGE_TAG}
+
+          for i in $(seq 1 20); do
+            if curl -sSf http://localhost:8093/ >/dev/null 2>&1; then
+              echo "App is responding"
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "App did not respond on time"
+          exit 1
+        '''
+      }
+      post {
+        always {
+          sh 'docker rm -f ${TEST_CONTAINER} >/dev/null 2>&1 || true'
+        }
+      }
+    }
+  }
+}
